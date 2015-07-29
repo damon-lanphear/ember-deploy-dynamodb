@@ -3,13 +3,17 @@
 This is an implementation of the ember-deploy index store that uses [DynamoDB](http://aws.amazon.com/dynamodb) with
 [ember-deploy](https://github.com/levelbossmike/ember-deploy).
 
-This module is currently a **work in progress** and not ready for use.
-
 ## Rationale and Use Case ##
 
 The default ember-deploy revision store uses redis.  Redis is perfectly fine for this application. If you are running entirely on AWS, however, your options for Redis are to run your own in EC2 or the Container Service or to use Elastic Cache. Elastic Cache is not an attractive option for this application because you cannot route to Elastic Cache unless you are in the same VPC as your Elastic Cache instance. This poses a problem for some CI systems.  If you prefer to run on entirely managed infrastructure then running your Redis instance is not all that attractive either.
 
 For AWS users the best option for a publicly addressable, highly available, fully managed, persistent key value store with predictable performance is DynamoDB.
+
+## Installation ##
+
+Execute the following in your ember-cli project:
+
+`npm install --save-dev ember-deploy-ddb`
 
 ## Configuration ##
 
@@ -35,8 +39,8 @@ module.exports = {
     buildEnv: 'development',
     store: {
       type: 'dynamodb',
-      accessKey: process.env['AWS_ACCESS_KEY'],
-      secretKey: process.env['AWS_SECRET_KEY'],
+      accessKeyId: process.env['AWS_ACCESS_KEY'],
+      secretAccessKey: process.env['AWS_SECRET_KEY'],
       region: '<your-aws-region-code>',
       table: '<your-table-name>',
       index: '<your-gsi-name>'
