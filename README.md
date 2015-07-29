@@ -13,9 +13,10 @@ module.exports = {
     buildEnv: 'development',
     store: {
       type: 'dynamodb',
-      accessKeyId: '<your-access-key-goes-here>',
-      secretAccessKey: process.env['AWS_ACCESS_KEY'],
-      region: '<you-aws-region-code>'
+      accessKey: process.env['AWS_ACCESS_KEY'],
+      secretKey: process.env['AWS_SECRET_KEY'],
+      region: '<your-aws-region-code>',
+      table: '<your-table-name>'
     }
   }
 };

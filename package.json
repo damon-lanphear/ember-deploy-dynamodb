@@ -1,0 +1,47 @@
+{
+  "name": "ember-deploy-dynamodb",
+  "version": "0.0.1",
+  "description": "ember-cli-deploy index-adapter for AWS DynamoDB",
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "ember server",
+    "build": "ember build",
+    "test": "./node_modules/mocha/bin/mocha node_tests/**/*-test.js"
+  },
+  "repository": "https://github.com/LevelbossMike/ember-deploy-dynamodb",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "broccoli-asset-rev": "^2.0.2",
+    "chai": "^2.3.0",
+    "chai-as-promised": "^5.0.0",
+    "ember-cli": "0.2.5",
+    "github": "^0.2.4",
+    "mocha": "^2.2.5"
+  },
+  "keywords": [
+    "ember-addon",
+    "ember-cli-deploy",
+    "ember-cli-deploy-index-adapter"
+  ],
+  "dependencies": {
+    "chalk": "^1.0.0",
+    "core-object": "1.1.0",
+    "ember-cli-babel": "^5.0.0",
+    "rsvp": "^3.0.18",
+    "silent-error": "^1.0.0",
+    "untildify": "^2.0.0",
+    "aws-sdk": "~2.1.40",
+    "async": "~1.4.0",
+    "moment": "~2.10.5"
+  },
+  "ember-addon": {
+    "configPath": "tests/dummy/config"
+  }
+}
