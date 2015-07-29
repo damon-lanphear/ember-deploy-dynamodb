@@ -1,6 +1,6 @@
 {
   "name": "ember-deploy-ddb",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "ember-cli-deploy index-adapter for AWS DynamoDB",
   "directories": {
     "doc": "doc",
