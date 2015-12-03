@@ -1,4 +1,4 @@
-# ember-deploy-dynamodb [![Build Status](https://travis-ci.org/damon-lanphear/ember-deploy-dynamodb.svg?branch=master)](https://travis-ci.org/damon-lanphear/ember-deploy-dynamodb)
+# ember-deploy-dynamodb [![Build Status](https://travis-ci.org/damon-lanphear/ember-deploy-dynamodb.svg?branch=master)](https://travis-ci.org/damon-lanphear/ember-deploy-dynamodb) [![](https://ember-cli-deploy.github.io/ember-cli-deploy-version-badges/plugins/ember-deploy-dynamodb.svg)](http://ember-cli-deploy.github.io/ember-cli-deploy-version-badges/)
 
 This is an implementation of the ember-deploy index store that uses [DynamoDB](http://aws.amazon.com/dynamodb) with
 [ember-deploy](https://github.com/levelbossmike/ember-deploy).
