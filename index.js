@@ -30,6 +30,9 @@ module.exports = {
         revisionKey: function(context) {
           return context.commandOptions.revision || (context.revisionData && context.revisionData.revisionKey);
         },
+        dynamoDbClient: function(context) {
+          return new DynamoDBAdapter(this.pluginConfig);
+        }
       },
 
       requiredConfig: ['accessKeyId', 'secretAccessKey', 'region', 'table', 'indexName'],
@@ -38,12 +41,11 @@ module.exports = {
         var revisionKey = this.readConfig('revisionKey');
         var distDir = this.readConfig('distDir');
         var keyPrefix = this.readConfig('keyPrefix');
-
-        var DynamoDB = new DynamoDBAdapter(this.pluginConfig);
+        var dynamoDbClient = this.readConfig('dynamoDbClient');
 
         return this._readFileContents(path.join(distDir, "index.html"))
           .then(function(indexContents) {
-            return DynamoDB.upload(indexContents, keyPrefix + ':' + revisionKey);
+            return dynamoDbClient.upload(indexContents, keyPrefix + ':' + revisionKey);
           }).then(this._uploadSuccessMessage.bind(this))
           .then(function(key) {
            return { dynamodbKey: key };
