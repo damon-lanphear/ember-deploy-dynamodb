@@ -35,16 +35,7 @@ module.exports = {
         var revisionKey = this.readConfig('revisionKey');
         var distDir = this.readConfig('distDir');
 
-        var options = {
-          manifest: this.readConfig('manifestSize'),
-          accessKeyId: this.readConfig('accessKeyId'),
-          secretAccessKey: this.readConfig('secretAccessKey'),
-          region: this.readConfig('region'),
-          table: this.readConfig('table'),
-          indexName: this.readConfig('indexName')
-        };
-
-        var DynamoDB = new DynamoDBAdapter(options);
+        var DynamoDB = new DynamoDBAdapter(this.pluginConfig);
 
         return this._readFileContents(path.join(distDir, "index.html"))
           .then(function(indexContents) {
