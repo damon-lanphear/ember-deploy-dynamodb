@@ -23,6 +23,9 @@ module.exports = {
         distDir: function(context) {
           return context.distDir;
         },
+        keyPrefix: function(context){
+          return context.project.name() + ':index';
+        },
         manifestSize: DEFAULT_MANIFEST_SIZE,
         revisionKey: function(context) {
           return context.commandOptions.revision || (context.revisionData && context.revisionData.revisionKey);
@@ -34,12 +37,13 @@ module.exports = {
       upload: function(context) {
         var revisionKey = this.readConfig('revisionKey');
         var distDir = this.readConfig('distDir');
+        var keyPrefix = this.readConfig('keyPrefix');
 
         var DynamoDB = new DynamoDBAdapter(this.pluginConfig);
 
         return this._readFileContents(path.join(distDir, "index.html"))
           .then(function(indexContents) {
-            return DynamoDB.upload(indexContents, revisionKey);
+            return DynamoDB.upload(indexContents, keyPrefix + ':' + revisionKey);
           }).then(this._uploadSuccessMessage.bind(this))
           .then(function(key) {
            return { dynamodbKey: key };
