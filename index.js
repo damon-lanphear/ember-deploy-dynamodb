@@ -55,6 +55,26 @@ module.exports = {
          .catch(this._errorMessage.bind(this));
       },
 
+      activate: function(context) {
+        var dynamoDbClient = this.readConfig('dynamoDbClient');
+        var revisionKey = this.readConfig('revisionKey');
+        var keyPrefix = this.readConfig('keyPrefix');
+        var activationSuffix = this.readConfig('activationSuffix');
+        var currentKey = keyPrefix + ':' + activationSuffix;
+
+        this.log('Activating revision `' + revisionKey + '`', { verbose: true });
+        return dynamoDbClient.activate(revisionKey, currentKey)
+          .then(this.log.bind(this, '✔ Activated revision `' + revisionKey + '`', {}))
+          .then(function(){
+            return {
+              revisionData: {
+                activatedRevisionKey: revisionKey
+              }
+            };
+          })
+          .catch(this._errorMessage.bind(this));
+      },
+
       fetchRevisions: function(context) {
         var keyPrefix = this.readConfig('keyPrefix');
         var activationSuffix  = this.readConfig('activationSuffix');
