@@ -9,6 +9,7 @@ var readFile  = denodeify(fs.readFile);
 
 var DeployPluginBase = require('ember-cli-deploy-plugin');
 var DynamoDBAdapter = require('./lib/dynamodb');
+var Promise = require('ember-cli/lib/ext/promise');
 
 var DEFAULT_MANIFEST_SIZE = 10;
 
@@ -26,6 +27,7 @@ module.exports = {
         keyPrefix: function(context){
           return context.project.name() + ':index';
         },
+        activationSuffix: 'current',
         manifestSize: DEFAULT_MANIFEST_SIZE,
         revisionKey: function(context) {
           return context.commandOptions.revision || (context.revisionData && context.revisionData.revisionKey);
@@ -51,6 +53,19 @@ module.exports = {
            return { dynamodbKey: key };
          })
          .catch(this._errorMessage.bind(this));
+      },
+
+      fetchRevisions: function(context) {
+        var keyPrefix = this.readConfig('keyPrefix');
+        var activationSuffix  = this.readConfig('activationSuffix');
+        var dynamoDbClient = this.readConfig('dynamoDbClient');
+
+        this.log('Listing revisions');
+        return dynamoDbClient.list(keyPrefix + ':' + activationSuffix)
+          .then(function(revisions) {
+            return { revisions: revisions };
+          })
+          .catch(this._errorMessage.bind(this));
       },
 
       _readFileContents: function(path) {
