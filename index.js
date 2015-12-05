@@ -27,6 +27,7 @@ module.exports = {
         keyPrefix: function(context){
           return context.project.name() + ':index';
         },
+        filePattern: 'index.html',
         activationSuffix: 'current',
         manifestSize: DEFAULT_MANIFEST_SIZE,
         revisionKey: function(context) {
@@ -49,13 +50,14 @@ module.exports = {
       requiredConfig: ['accessKeyId', 'secretAccessKey', 'region', 'table', 'indexName'],
 
       upload: function(context) {
+        var filePattern = this.readConfig('filePattern');
         var revisionKey = this.readConfig('revisionKey');
         var distDir = this.readConfig('distDir');
         var keyPrefix = this.readConfig('keyPrefix');
         var dynamoDbClient = this.readConfig('dynamoDbClient');
         var revision = this._makeKey(revisionKey);
 
-        return this._readFileContents(path.join(distDir, "index.html"))
+        return this._readFileContents(path.join(distDir, filePattern))
           .then(function(indexContents) {
             return dynamoDbClient.upload(indexContents, revision);
           }).then(this._uploadSuccessMessage.bind(this))
