@@ -44,10 +44,11 @@ module.exports = {
         var distDir = this.readConfig('distDir');
         var keyPrefix = this.readConfig('keyPrefix');
         var dynamoDbClient = this.readConfig('dynamoDbClient');
+        var revision = this._makeKey(revisionKey);
 
         return this._readFileContents(path.join(distDir, "index.html"))
           .then(function(indexContents) {
-            return dynamoDbClient.upload(indexContents, keyPrefix + ':' + revisionKey);
+            return dynamoDbClient.upload(indexContents, revision);
           }).then(this._uploadSuccessMessage.bind(this))
           .then(function(key) {
            return { dynamodbKey: key };
@@ -60,7 +61,7 @@ module.exports = {
         var revisionKey = this.readConfig('revisionKey');
         var keyPrefix = this.readConfig('keyPrefix');
         var activationSuffix = this.readConfig('activationSuffix');
-        var currentKey = keyPrefix + ':' + activationSuffix;
+        var currentKey = this._makeKey(activationSuffix);
 
         this.log('Activating revision `' + revisionKey + '`', { verbose: true });
         return dynamoDbClient.activate(revisionKey, currentKey)
@@ -81,7 +82,7 @@ module.exports = {
         var dynamoDbClient = this.readConfig('dynamoDbClient');
 
         this.log('Listing revisions');
-        return dynamoDbClient.list(keyPrefix + ':' + activationSuffix)
+        return dynamoDbClient.list(this._makeKey(activationSuffix))
           .then(function(revisions) {
             return { revisions: revisions };
           })
@@ -103,6 +104,11 @@ module.exports = {
       _errorMessage: function(error) {
         this.log(error, { color: 'red' });
         return Promise.reject(error);
+      },
+
+      _makeKey: function(value) {
+        var keyPrefix = this.readConfig('keyPrefix');
+        return keyPrefix + ':' + value;
       }
     });
 
