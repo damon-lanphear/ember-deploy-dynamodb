@@ -34,6 +34,15 @@ module.exports = {
         },
         dynamoDbClient: function(context) {
           return new DynamoDBAdapter(this.pluginConfig);
+        },
+        didDeployMessage: function(context){
+          var revisionKey = context.revisionData && context.revisionData.revisionKey;
+          var activatedRevisionKey = context.revisionData && context.revisionData.activatedRevisionKey;
+          if (revisionKey && !activatedRevisionKey) {
+            return "Deployed but did not activate revision " + revisionKey + ". "
+                 + "To activate, run: "
+                 + "ember deploy:activate " + context.deployTarget + " --revision=" + revisionKey + "\n";
+          }
         }
       },
 
@@ -87,6 +96,13 @@ module.exports = {
             return { revisions: revisions };
           })
           .catch(this._errorMessage.bind(this));
+      },
+
+      didDeploy: function(context){
+        var didDeployMessage = this.readConfig('didDeployMessage');
+        if (didDeployMessage) {
+          this.log(didDeployMessage);
+        }
       },
 
       _readFileContents: function(path) {
