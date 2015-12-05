@@ -71,9 +71,10 @@ module.exports = {
         var keyPrefix = this.readConfig('keyPrefix');
         var activationSuffix = this.readConfig('activationSuffix');
         var currentKey = this._makeKey(activationSuffix);
+        var revision = this._makeKey(revisionKey);
 
         this.log('Activating revision `' + revisionKey + '`', { verbose: true });
-        return dynamoDbClient.activate(revisionKey, currentKey)
+        return dynamoDbClient.activate(revision, currentKey)
           .then(this.log.bind(this, '✔ Activated revision `' + revisionKey + '`', {}))
           .then(function(){
             return {
