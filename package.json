@@ -1,6 +1,6 @@
 {
   "name": "ember-cli-deploy-dynamodb",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "ember-cli-deploy plugin for AWS DynamoDB",
   "directories": {
     "doc": "doc",
