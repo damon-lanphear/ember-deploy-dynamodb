@@ -1,7 +1,7 @@
 {
-  "name": "ember-deploy-ddb",
-  "version": "0.0.3",
-  "description": "ember-cli-deploy index-adapter for AWS DynamoDB",
+  "name": "ember-cli-deploy-dynamodb",
+  "version": "0.1.0",
+  "description": "ember-cli-deploy plugin for AWS DynamoDB",
   "directories": {
     "doc": "doc",
     "test": "tests"
@@ -27,19 +27,19 @@
   },
   "keywords": [
     "ember-addon",
-    "ember-cli-deploy",
-    "ember-cli-deploy-index-adapter"
+    "ember-cli-deploy-plugin"
   ],
   "dependencies": {
+    "async": "~1.4.0",
+    "aws-sdk": "~2.1.40",
     "chalk": "^1.0.0",
     "core-object": "1.1.0",
     "ember-cli-babel": "^5.0.0",
+    "ember-cli-deploy-plugin": "^0.2.0",
+    "moment": "~2.10.5",
     "rsvp": "^3.0.18",
     "silent-error": "^1.0.0",
-    "untildify": "^2.0.0",
-    "aws-sdk": "~2.1.40",
-    "async": "~1.4.0",
-    "moment": "~2.10.5"
+    "untildify": "^2.0.0"
   },
   "ember-addon": {
     "configPath": "tests/dummy/config"

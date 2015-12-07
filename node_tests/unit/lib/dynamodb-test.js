@@ -11,10 +11,10 @@ var DynamoDBAdapter = require('../../../lib/dynamodb');
 chai.use(chaiAsPromised);
 var expect = chai.expect;
 
-var MANIFEST = 'ember-deploy';
 var REVISION_KEY = 'test';
 var DOCUMENT_TO_SAVE = 'Hello';
-var UPLOAD_KEY = MANIFEST + ':' + REVISION_KEY;
+var UPLOAD_KEY = 'ember-deploy:' + REVISION_KEY;
+var CURRENT_KEY = 'ember-deploy:current';
 var MANIFEST_SIZE = 10;
 
 var cfg = {
@@ -27,24 +27,6 @@ var cfg = {
 
 var ddb = new DDB(cfg);
 
-var revisionsList = [];
-var mockShaTaggingAdapter = new CoreObject({
-  tagCount: 0,
-
-  mockTag: UPLOAD_KEY,
-
-  createTag: function() {
-    var tag = this.tagCount < 1 ? this.mockTag : this.mockTag + this.tagCount;
-    revisionsList.push(tag);
-    this.tagCount++;
-    return tag;
-  },
-
-  reset: function() {
-    this.tagCount = 0;
-  }
-});
-
 var ddbAdapter;
 var upload;
 
@@ -52,23 +34,24 @@ var cleanUpDDB = function(done) {
   ddb.clear().then(done).catch(done);
 };
 
-var uploadWithRevisionKey = function() {
-  return ddbAdapter.upload(DOCUMENT_TO_SAVE);
+var uploadWithRevisionKey = function(key) {
+  key = key === undefined ? '' : key;
+  return ddbAdapter.upload(DOCUMENT_TO_SAVE, UPLOAD_KEY + key);
 };
 
-var fillUpManifest = function(uploadCount, revisionsList) {
+var fillUpManifest = function(uploadCount) {
   var promises = [];
 
   for (var i = 0; i < uploadCount; i++) {
-    promises.push(uploadWithRevisionKey());
+    promises.push(uploadWithRevisionKey(i));
   }
 
   return RSVP.all(promises);
 };
 
-var resetUI = function(adapter) {
-  adapter.ui.output = '';
-};
+function listRevisions() {
+  return ddbAdapter.list(CURRENT_KEY);
+}
 
 describe('DynamoDBAdapter', function() {
   this.timeout(5000);
@@ -81,18 +64,13 @@ describe('DynamoDBAdapter', function() {
       region: 'us-west-2',
       table: 'ember-deploy-test',
       indexName: 'manifest-created-index',
-      manifest: MANIFEST,
-      manifestSize: MANIFEST_SIZE,
-      taggingAdapter: mockShaTaggingAdapter,
-      ui: new MockUI()
+      manifestSize: MANIFEST_SIZE
     });
 
     upload = uploadWithRevisionKey();
   });
 
   afterEach(function(done) {
-    mockShaTaggingAdapter.reset();
-    revisionsList = [];
     cleanUpDDB(done);
   });
 
@@ -106,12 +84,6 @@ describe('DynamoDBAdapter', function() {
 
     it('resolves with the document key on successful upload', function(done) {
       expect(upload.catch(done)).to.eventually.eq(UPLOAD_KEY).and.notify(done);
-    });
-
-    it('prints a success message when upload succeeds', function(done) {
-      return expect(upload.then(function() {
-        return ddbAdapter.ui.output;
-      }).catch(done)).to.eventually.contain('Upload successful').notify(done);
     });
 
     it('updates a list of recent uploads when upload resolves', function(done) {
@@ -141,9 +113,7 @@ describe('DynamoDBAdapter', function() {
       beforeEach(function() {
         second = upload
           .then(function() {
-            mockShaTaggingAdapter.reset();
-
-            return ddbAdapter.upload(DOCUMENT_TO_SAVE);
+            return ddbAdapter.upload(DOCUMENT_TO_SAVE, UPLOAD_KEY);
           });
       });
 
@@ -152,8 +122,8 @@ describe('DynamoDBAdapter', function() {
       });
 
       it('rejects with a SilentError ember-cli can handle', function(done) {
-        var errorMessage = /Upload\ failed!/;
-        expect(second).to.be.rejectedWith(SilentError, errorMessage).and.notify(done);
+        var errorMessage = /revision already exists/;
+        expect(second).to.be.rejectedWith(Error, errorMessage).and.notify(done);
       });
     });
   });
@@ -163,37 +133,16 @@ describe('DynamoDBAdapter', function() {
 
     beforeEach(function() {
       uploadsDone = upload
-        .then(fillUpManifest.bind(null, MANIFEST_SIZE - 1, revisionsList));
+        .then(fillUpManifest.bind(null, MANIFEST_SIZE));
     });
 
     describe('#list', function() {
       it('lists all uploads stored in manifest', function(done) {
         return expect(uploadsDone
-          .then(function() {
-            resetUI(ddbAdapter);
-            return ddbAdapter.list();
-          })
-          .then(function() {
-            var uploads = ddbAdapter.ui.output;
-            var filtered = revisionsList.filter(function(upload) {
-              return (uploads.indexOf(upload) < 0);
-            });
-            return filtered.length;
-          }).catch(function(error) {console.dir(error)})).to.eventually.eq(0).and.notify(done);
-      });
-
-      it('prints out a formatted list of uploaded revisions', function(done) {
-        return expect(uploadsDone
-          .then(function() {
-            resetUI(ddbAdapter);
-
-            return ddbAdapter.list();
-          })
-          .then(function() {
-
-            return ddbAdapter.ui.output;
-
-          })).to.eventually.contain('uploaded revisions').and.notify(done);
+          .then(listRevisions)
+          .then(function(revisions) {
+            return revisions.length;
+          }).catch(function(error) {console.dir(error)})).to.eventually.eq(MANIFEST_SIZE).and.notify(done);
       });
     });
 
@@ -201,57 +150,51 @@ describe('DynamoDBAdapter', function() {
       var activation;
 
       describe('successful activation', function() {
-        var revisionToActivate;
-
         beforeEach(function() {
           activation = uploadsDone
             .then(function() {
-              resetUI(ddbAdapter);
-              revisionToActivate = revisionsList[0];
-              return ddbAdapter.activate(revisionToActivate);
+              return ddbAdapter.activate(UPLOAD_KEY, CURRENT_KEY);
             });
         });
 
-        it('sets <manifest>:current when key is in manifest', function(done) {
-          return expect(activation
-              .then(function() {
-                return ddb.getRevision(MANIFEST + ':current');
-              }))
-            .to.eventually.eq(revisionsList[0]).and.notify(done);
+        it('sets current key when revision key is in manifest', function() {
+          function getCurrentRevision() {
+            return ddb.getRevision(CURRENT_KEY);
+          }
+          return expect(activation.then(getCurrentRevision)).to.eventually.eq(UPLOAD_KEY);
         });
 
-        it('prints a success message when activation succeeds', function(done) {
-          return expect(activation
-            .then(function() {
-              return ddbAdapter.ui.output;
-            })).to.eventually.contain('Activation successful!').and.notify(done);
+        it('lists revisions with current revision marked as active', function() {
+          function findActive(revisions) {
+            return revisions.filter(function(revision) { return revision.active });
+          }
+          return expect(activation.then(listRevisions).then(findActive))
+            .to.eventually.eql([{ revision: UPLOAD_KEY, active: true }]);
         });
       });
 
-      it('rejects when no revision is passed', function(done) {
+      it('rejects when no revision is passed', function() {
         activation = uploadsDone
           .then(function() {
             return ddbAdapter.activate();
           });
 
-        expect(activation).to.be.rejectedWith(SilentError, 'Error!');
-        done();
+        return expect(activation).to.be.rejectedWith(Error, 'revision not found');
       });
 
-      it('rejects with SilentError when key is not in manifest', function(done) {
+      it('rejects when key is not in manifest', function() {
         activation = uploadsDone
           .then(function() {
             return ddbAdapter.activate('not-in-manifest');
           });
 
-        expect(activation).to.be.rejectedWith(SilentError, 'Error!');
-        done();
+        return expect(activation).to.be.rejectedWith(Error, 'revision not found');
       });
 
-      it('does not set the current revision when key is not in manifest', function(done) {
+      it('does not set the current revision when key is not in manifest', function() {
         activation = uploadsDone
           .then(function() {
-            return ddbAdapter.activate(revisionsList[0]);
+            return ddbAdapter.activate(UPLOAD_KEY, CURRENT_KEY);
           })
           .then(function() {
             return ddbAdapter.activate('does-not-exist');
@@ -259,24 +202,10 @@ describe('DynamoDBAdapter', function() {
 
         return expect(activation).to.be.rejected
           .then(function() {
-            return ddbAdapter._current();
+            return ddbAdapter._current(CURRENT_KEY);
           }).then(function(currentRevision) {
-            return expect(currentRevision).to.eql(revisionsList[0]);
-          }).finally(done);
-      });
-    });
-
-    describe('#_current', function() {
-      it('returns revision that set <manifest>:current', function(done) {
-        var rta;
-        return expect(uploadsDone
-          .then(function() {
-            rta = revisionsList[0];
-            return ddbAdapter.activate(rta);
-          })
-          .then(function() {
-            return ddbAdapter._current();
-          })).to.eventually.eq(revisionsList[0]).and.notify(done);
+            return expect(currentRevision).to.eql(UPLOAD_KEY);
+          });
       });
     });
   });
