@@ -24,7 +24,7 @@ For more information on what plugins are and how they work, please refer to the 
 
 Execute the following in your ember-cli project:
 
-- Install this plugin `npm install --save-dev ember-cli-deploy-ddb`
+- Install this plugin `npm install --save-dev ember-cli-deploy-dynamodb`
 
 - Place the following configuration into `config/deploy.js`
 
