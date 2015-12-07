@@ -2,7 +2,7 @@
 
 > An ember-cli-deploy plugin to upload index.html to a DynamoDB store
 
-#### WARNING: This plugin is only compatible with ember-cli-deploy versions >= 0.5.0 (see v0.4.0 tag for old version)
+#### WARNING: This plugin is only compatible with ember-cli-deploy versions >= 0.5.0 (see v0.0.3 tag for old version)
 
 This plugin uploads a file, presumably index.html, to a specified [DynamoDB](http://aws.amazon.com/dynamodb) database.
 
