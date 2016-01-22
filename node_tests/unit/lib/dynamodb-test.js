@@ -107,6 +107,17 @@ describe('DynamoDBAdapter', function() {
         }).catch(function(error) {console.dir(error);})).to.eventually.eq(MANIFEST_SIZE).and.notify(done);
     });
 
+    it('removes oldest entry', function() {
+      return upload
+        .then(fillUpManifest.bind(null, MANIFEST_SIZE))
+        .then(function() {
+          return ddb.listAll();
+        })
+        .then(function(values) {
+          expect(values).not.to.contain(UPLOAD_KEY);
+        });
+    });
+
     describe('upload failure', function() {
       var second;
 
@@ -133,7 +144,7 @@ describe('DynamoDBAdapter', function() {
 
     beforeEach(function() {
       uploadsDone = upload
-        .then(fillUpManifest.bind(null, MANIFEST_SIZE));
+        .then(fillUpManifest.bind(null, MANIFEST_SIZE-1));
     });
 
     describe('#list', function() {
