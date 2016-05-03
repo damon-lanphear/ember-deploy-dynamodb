@@ -118,25 +118,18 @@ describe('DynamoDBAdapter', function() {
         });
     });
 
-    describe('upload failure', function() {
-      var second;
-
-      beforeEach(function() {
-        second = upload
-          .then(function() {
-            return ddbAdapter.upload(DOCUMENT_TO_SAVE, UPLOAD_KEY);
-          });
-      });
-
-      it('rejects when passed key is already in manifest', function(done) {
-        expect(second).to.be.rejected.and.notify(done);
-      });
-
-      it('rejects with a SilentError ember-cli can handle', function(done) {
-        var errorMessage = /revision already exists/;
-        expect(second).to.be.rejectedWith(Error, errorMessage).and.notify(done);
-      });
+    it('is no-op second time upload occurs', function(done) {
+      expect(upload
+        .then(function() {
+          return ddbAdapter.upload(DOCUMENT_TO_SAVE, UPLOAD_KEY);
+        })
+        .then(function() {
+            return ddb.getRevision(UPLOAD_KEY);
+        }))
+        .to.eventually.eq(DOCUMENT_TO_SAVE)
+        .and.notify(done);
     });
+
   });
 
   describe('list/activate', function() {
