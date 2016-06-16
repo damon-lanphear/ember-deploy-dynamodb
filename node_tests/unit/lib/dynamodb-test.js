@@ -168,12 +168,13 @@ describe('DynamoDBAdapter', function() {
           return expect(activation.then(getCurrentRevision)).to.eventually.eq(UPLOAD_KEY);
         });
 
-        it('lists revisions with current revision marked as active', function() {
+        it('lists revisions with current revision marked as active and the created timestamp', function() {
           function findActive(revisions) {
             return revisions.filter(function(revision) { return revision.active });
           }
-          return expect(activation.then(listRevisions).then(findActive))
-            .to.eventually.eql([{ revision: UPLOAD_KEY, active: true }]);
+          return expect(activation.then(listRevisions).then(findActive).then(function(results) {
+            return results[0];
+          })).to.eventually.include({ revision: UPLOAD_KEY, active: true }).and.has.key('timestamp');
         });
       });
 
