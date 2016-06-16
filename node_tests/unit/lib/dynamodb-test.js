@@ -13,8 +13,9 @@ var expect = chai.expect;
 
 var REVISION_KEY = 'test';
 var DOCUMENT_TO_SAVE = 'Hello';
-var UPLOAD_KEY = 'ember-deploy:' + REVISION_KEY;
-var CURRENT_KEY = 'ember-deploy:current';
+var KEY_PREFIX = 'ember-deploy:';
+var UPLOAD_KEY = KEY_PREFIX + REVISION_KEY;
+var CURRENT_KEY = KEY_PREFIX + 'current';
 var MANIFEST_SIZE = 10;
 
 var cfg = {
@@ -50,7 +51,7 @@ var fillUpManifest = function(uploadCount) {
 };
 
 function listRevisions() {
-  return ddbAdapter.list(CURRENT_KEY);
+  return ddbAdapter.list(CURRENT_KEY, KEY_PREFIX);
 }
 
 describe('DynamoDBAdapter', function() {
@@ -174,7 +175,7 @@ describe('DynamoDBAdapter', function() {
           }
           return expect(activation.then(listRevisions).then(findActive).then(function(results) {
             return results[0];
-          })).to.eventually.include({ revision: UPLOAD_KEY, active: true }).and.has.key('timestamp');
+          })).to.eventually.include({ revision: REVISION_KEY, active: true }).and.has.key('timestamp');
         });
       });
 

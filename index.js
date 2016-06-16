@@ -94,7 +94,7 @@ module.exports = {
         var dynamoDbClient = this.readConfig('dynamoDbClient');
 
         this.log('Listing revisions');
-        return dynamoDbClient.list(this._makeKey(activationSuffix))
+        return dynamoDbClient.list(this._makeKey(activationSuffix), this._makeKey())
           .then(function(revisions) {
             return { revisions: revisions };
           })
@@ -126,6 +126,7 @@ module.exports = {
       },
 
       _makeKey: function(value) {
+        value = value || '';
         var keyPrefix = this.readConfig('keyPrefix');
         return keyPrefix + ':' + value;
       }
