@@ -47,7 +47,7 @@ module.exports = {
         }
       },
 
-      requiredConfig: ['accessKeyId', 'secretAccessKey', 'region', 'table', 'indexName'],
+      requiredConfig: ['region', 'table', 'indexName'],
 
       upload: function(context) {
         var filePattern = this.readConfig('filePattern');
