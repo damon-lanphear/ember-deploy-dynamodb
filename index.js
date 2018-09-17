@@ -9,7 +9,7 @@ var readFile  = denodeify(fs.readFile);
 
 var DeployPluginBase = require('ember-cli-deploy-plugin');
 var DynamoDBAdapter = require('./lib/dynamodb');
-var Promise = require('ember-cli/lib/ext/promise');
+var Promise = require('rsvp').Promise;
 
 var DEFAULT_MANIFEST_SIZE = 10;
 
